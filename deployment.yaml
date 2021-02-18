@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-producer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-producer
+  template:
+    metadata:
+      labels:
+        app: hello-producer
+    spec:
+      containers:
+      - name: hello-producer-cont
+        image: ddmendes/hello-producer:0.0.1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-producer-service
+  labels:
+    run: hello-producer-service
+spec:
+  type: NodePort
+  ports:
+  - port: 8080
+    protocol: TCP
+    nodePort: 30000
+  selector:
+    app: hello-producer
