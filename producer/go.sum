@@ -1,3 +1,6 @@
+github.com/ddmendes/hello v0.0.0-20210225114919-2e7f47b64335 h1:JtdGHI9zLYDScM9DuUKaFacyPSQo55wt/7kQP0IaICg=
+github.com/ddmendes/hello/queue v0.0.0-20210225123339-47840cd52ec7 h1:uC+S00wFkJwIquMxjdANNPJEOchfcyodu/sXGiBgoFQ=
+github.com/ddmendes/hello/queue v0.0.0-20210225123339-47840cd52ec7/go.mod h1:qLNh4WJoOvuVjHhfXVEhcImeD29e022pgTGJy0jtjug=
 github.com/gorilla/mux v1.8.0 h1:i40aqfkR1h2SlN9hojwV5ZA91wcXFOvkdNIeFDP5koI=
 github.com/gorilla/mux v1.8.0/go.mod h1:DVbg23sWSpFRCP0SfiEN6jmj59UnW/n46BH5rLB71So=
 github.com/streadway/amqp v1.0.0 h1:kuuDrUJFZL1QYL9hUNuCxNObNzB0bV/ZG5jV3RWAQgo=

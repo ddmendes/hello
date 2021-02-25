@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
-	"time"
 
 	"github.com/ddmendes/hello/queue"
 	"github.com/gorilla/mux"
