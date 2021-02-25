@@ -1,33 +1,29 @@
-package main
+package queue
 
 import (
-	"encoding/json"
-	"fmt"
-	"log"
-	"net/http"
 	"os"
 	"time"
 
-	"github.com/gorilla/mux"
 	"github.com/streadway/amqp"
 )
 
 const (
-	nameKey              string = "name"
 	rmqURIEnvKey         string = "HELLO_RMQ_URI"
-	defaultRmqURI        string = "amqp://guest:guest@localhost:5672/"
 	rmqGreetingsExchange string = "greetings-exchange"
 	rmqHelloRoutingKey   string = "hello"
 	rmqGreetingsQueue    string = "greetings-queue"
 )
 
-type rmq struct {
+// Rmq holds necessary data for connection with rabbitmq
+type Rmq struct {
 	uri  string
 	conn *amqp.Connection
 	ch   *amqp.Channel
 }
 
-func (r *rmq) loadURIOrDefault(defaultURI string) {
+// LoadURIOrDefault gets rabbitmq URI from HELLO_RMQ_URI env variable or
+// uses the default at defaultURI parameter.
+func (r *Rmq) LoadURIOrDefault(defaultURI string) {
 	uri, ok := os.LookupEnv(rmqURIEnvKey)
 	if ok {
 		r.uri = uri
@@ -36,7 +32,8 @@ func (r *rmq) loadURIOrDefault(defaultURI string) {
 	}
 }
 
-func (r *rmq) connect() {
+// Connect open connection with RabbitMQ
+func (r *Rmq) Connect() {
 	conn, err := amqp.Dial(r.uri)
 	if err != nil {
 		panic(err)
@@ -50,7 +47,8 @@ func (r *rmq) connect() {
 	r.ch = ch
 }
 
-func (r *rmq) setup() {
+// Setup exchange, queue and queue bind
+func (r *Rmq) Setup() {
 	err := r.ch.ExchangeDeclare(
 		rmqGreetingsExchange, "fanout", false, false, false, false, nil)
 	if err != nil {
@@ -68,48 +66,9 @@ func (r *rmq) setup() {
 	}
 }
 
-type message struct {
-	Person string `json:"person"`
-}
-
-var r *rmq
-
-func main() {
-	r = initRmq()
-	server := initMux()
-	log.Fatal(server.ListenAndServe())
-}
-
-func initRmq() *rmq {
-	r := &rmq{}
-	r.loadURIOrDefault(defaultRmqURI)
-	r.connect()
-	return r
-}
-
-func initMux() *http.Server {
-	r := mux.NewRouter()
-	r.HandleFunc("/", hello)
-	return &http.Server{
-		Addr:    ":8080",
-		Handler: r,
-	}
-}
-
-func hello(w http.ResponseWriter, rq *http.Request) {
-	name := rq.FormValue(nameKey)
-	if name == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Missing name parameter"))
-		return
-	}
-
-	body, err := json.Marshal(message{name})
-	if err != nil {
-		panic(err)
-	}
-
-	err = r.ch.Publish(
+// Publish a body to greetings exchange and hello routing key
+func (r *Rmq) Publish(body []byte) error {
+	return r.ch.Publish(
 		rmqGreetingsExchange, rmqHelloRoutingKey, false, false,
 		amqp.Publishing{
 			DeliveryMode: amqp.Transient,
@@ -118,9 +77,4 @@ func hello(w http.ResponseWriter, rq *http.Request) {
 			Timestamp:    time.Now(),
 		},
 	)
-	if err != nil {
-		panic(err)
-	}
-
-	w.Write([]byte(fmt.Sprintf("Hello, %s!", name)))
 }
